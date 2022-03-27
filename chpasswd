@@ -1,0 +1,235 @@
+#!/bin/bash
+## Author : Quach Chi Cuong
+## Last updated : 08/2016
+## Description : 
+## - Change pass user with Random string and print that Random string on terminal
+## - Change pass user with password that user enter.
+## - Change pass user with Random string has specific length.
+##
+## Software name : /usr/bin/chpasswd
+
+
+### Functions   ####
+### Do not edit ####
+
+help_manual()
+{
+       clear
+cat << EOF
+Usage : 
+	   $0 [-h] [-u] <agrument1> [-p] <agrument2> [-m] <agrument3>
+
+Option :
+        -u 	username of user in system that you want to change password.
+        -p 	the password input from user. If you dont want to user RANDOM password which created by \"0\"
+        -m 	max length of Random password which created by \"$0\"
+        -h 	help page
+
+Notice :
+        - You have to specific the user [-u] in agrument of command.
+        - Use option user [-u] only if you want to change password with RANDOM String.
+        - Default max length [-m] is 12.
+        - Option max length [-m] just use with option user [-u].
+        - Never use option password [-p] with [-m].
+        - Never use password [-p] with the length of it is shorter than 7 or greater than 35.
+
+Examples : 
+        \$ $0 -u demo1
+        \$ $0 -u demo1 -m 15
+        \$ $0 -u demo2 -p secretpass
+EOF
+	exit 0
+}
+
+usage()
+{
+	clear
+        echo "- Invalid option, please check the syntax of command."
+cat << EOF
+Usage : 
+	   \$ $0 [-h] [-u] <agrument1> [-p] <agrument2> [-m] <agrument3>
+
+Run "\$ $0 -h" for get help page. 
+EOF
+	exit 0
+}
+
+create_dict()
+{
+	## Generate dictionary character and number in Array ##
+        COUNT=0
+        for i in {a..z}
+        do
+                DICT_ARRAY[$COUNT]=${i}
+                ((COUNT++))
+        done
+
+        for j in {A..Z}
+        do
+                DICT_ARRAY[$COUNT]=${j}
+                ((COUNT++))
+        done
+        
+        for z in {0..9}
+        do
+                DICT_ARRAY[$COUNT]=${z}
+                if [ ${z} == "9" ];then
+                        MAX_ARRAY=${COUNT}
+                        unset COUNT
+                        continue
+                fi 
+                ((COUNT++))
+        done
+}
+
+generate_random()
+{
+        local MAX=${MAX_STRING}
+        RD_PASSWORD=""
+        for pos in `seq 1 ${MAX}`
+        do
+                RD_NUMBER=$(($RANDOM % $MAX_ARRAY))
+                RD_POS=${DICT_ARRAY[$RD_NUMBER]}
+                RD_PASSWORD="${RD_PASSWORD}${RD_POS}"
+        done
+}
+
+change_pass()
+{
+        ## Check tool chpasswd ##
+        if [[ ! $(which chpasswd 2> /dev/null) ]];then
+                echo "- Tool 'chpasswd' use to change password, does not exist. Please install it. Exit !"
+                exit 1
+        fi
+        if [[ ${USER_FLAG} -eq 1 && ${PASS_FLAG} -eq 0 && ${MAX_FLAG} -eq 0 ]];then
+                if [[ $(grep -w "^${USERNAME}" /etc/passwd) ]];then
+                        echo "${USERNAME}:${RD_PASSWORD}" | chpasswd -c SHA512
+                        if [ $? -eq 0 ];then
+                                echo "User : ${USERNAME}"
+                                echo "New pass: ${RD_PASSWORD}"
+                                echo "- Change password for user [${USERNAME}]  SUCCESS. Exit"
+                                exit 0
+                        else echo "- Change password for user [${USERNAME}]  FAIL. Exit"
+                                exit 1
+                        fi
+                fi
+        elif [[ ${USER_FLAG} -eq 1 && ${PASS_FLAG} -eq 0 && ${MAX_FLAG} -eq 1 ]]; then
+                if [[ $(grep -w "^${USERNAME}" /etc/passwd) ]];then
+                        echo "${USERNAME}:${RD_PASSWORD}" | chpasswd -c SHA512
+                        if [ $? -eq 0 ];then
+                                echo "User : ${USERNAME}"
+                                echo "New pass: ${RD_PASSWORD}"
+                                echo "- Change password for user [${USERNAME}]  SUCCESS. Exit"
+                                exit 0
+                        else echo "- Change password for user [${USERNAME}]  FAIL. Exit"
+                                exit 1
+                        fi
+                fi
+        elif [[ ${USER_FLAG} -eq 1 && ${PASS_FLAG} -eq 1 && ${MAX_FLAG} -eq 0 ]];then
+                if [[ $(grep -w "^${USERNAME}" /etc/passwd) ]];then
+                        echo "${USERNAME}:${PASSWORD}" | chpasswd -c SHA512
+                        if [ $? -eq 0 ];then
+                                echo "User : ${USERNAME}"
+                                echo "New pass: ${PASSWORD}"
+                                echo "- Change password for user [${USERNAME}]  SUCCESS. Exit"
+                                exit 0
+                        else echo "- Change password for user [${USERNAME}]  FAIL. Exit"
+                                exit 1
+                        fi
+                fi
+        fi
+
+}
+
+
+### Main check agrument ###
+
+if [ $# -eq 0 ];then
+	   usage
+elif [ $# -ge 1 ];then
+        FLAG_ARGU=0
+        for ARGU in "$@"
+        do
+            if [[ $(echo $ARGU | grep "\-") ]];then
+                FLAG_ARGU=1
+            fi
+        done
+        if [ ! ${FLAG_ARGU} -eq 1 ];then
+            usage
+        fi
+fi
+
+USER_FLAG=0
+PASS_FLAG=0
+MAX_FLAG=0
+
+while getopts ":hu:p:m:" OPTS
+do	
+        case "$OPTS" in
+        u)	
+                USERNAME="$OPTARG"
+                USER_FLAG=1
+                ;;
+        p)	
+                PASSWORD="$OPTARG"
+                PASS_FLAG=1
+                ;;
+        m)	
+                MAX_STRING="$OPTARG"
+                MAX_FLAG=1
+                ;;
+        h)	 
+                help_manual
+                ;;
+        *)     usage
+        esac
+done
+shift $((OPTIND-1))
+
+if [[ ${USER_FLAG} -ne 1 || -z ${USER_FLAG} ]];then
+        echo "[Error] You have to determine the username you want to change password".
+        usage
+fi
+
+if [[ ${MAX_FLAG} -ne 1 || -z ${MAX_FLAG} ]];then
+	   MAX_STRING="12"
+fi
+
+if [[ ${USER_FLAG} -eq 1 && ! -z ${USERNAME} ]];then
+        if [[ ! $(grep -w "^${USERNAME}" /etc/passwd) ]];then
+            echo "[Error]: User does not exist. Please check it."
+            exit 1
+        fi
+elif [[ ${USER_FLAG} -eq 1 && -z ${USERNAME} ]];then
+        echo "[Error]: User input is null. Please re-input carefully."
+        exit 1
+fi
+
+if [[ ${PASS_FLAG} -eq 1 && ! -z ${PASSWORD} ]];then
+        LENGTH_PASS=`echo ${#PASSWORD}`
+        if [[ ${LENGTH_PASS} -le 6 || ${LENGTH_PASS} -gt 35 ]];then
+            echo "[Alert]: Your password need to be in range between 7 and 35. Please re-input password."
+            exit 1
+        fi
+elif [[ ${PASS_FLAG} -eq 1 && -z ${PASSWORD} ]];then
+        echo "[Error]: Password input is null. Please re-input carefully."
+        exit 1
+fi
+
+if [[ ${MAX_FLAG} -eq 1 && ! -z ${MAX_STRING} ]];then
+        if [[ ${MAX_STRING} -le 6 || ${MAX_STRING} -gt 35 ]];then
+            echo "[Alert]: Max length of password need to be in range between 7 and 35. Please re-input max length."
+            exit 1
+        fi
+elif [[ ${MAX_FLAG} -eq 1 && -z ${MAX_STRING} ]];then
+        echo "[Error]: Max length input is null. Please re-input carefully."
+        exit 1
+fi
+###################
+
+### MAIN FUNCTION ###
+create_dict
+generate_random
+change_pass
+
+exit 0
