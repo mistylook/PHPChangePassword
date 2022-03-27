@@ -1,7 +1,5 @@
 <?php
 
-$shellscript = "sudo /usr/bin/chpasswd";
-
 function ValiateFrom($UserID, $old_password, $new_password, $new_confirm_password)
 {
     if (empty($UserID) || empty($old_password) || empty($new_password) || empty($new_confirm_password)) {
@@ -20,7 +18,7 @@ function ValiateFrom($UserID, $old_password, $new_password, $new_confirm_passwor
         header("Location:changepass.php?confirm-password");
         exit();
     }
-    if (imap_open('{mail.del.ac.id:143/novalidate-cert}INBOX', $UserID, $old_password)){
+    if (imap_open('{imap.domain.example.com:143/novalidate-cert}INBOX', $UserID, $old_password)){
         //call shell script to update password
         $cmd="sudo /usr/bin/chpasswd -u " . $_POST['UserID'] . " -p " . $_POST['new_password'];
         
@@ -87,7 +85,7 @@ if (isset($_POST['submit'])) {
                 exit();
             }
             if (strpos($fullUrl, "change-password-successful")) {
-                echo '<p class="text-green-500 font-bold text-1xl">Password change successful.</p><a class="text-green-500 font-bold" href="https://mail.del.ac.id/">Go back!</a>';
+                echo '<p class="text-green-500 font-bold text-1xl">Password change successful.</p><a class="text-green-500 font-bold" href="https://web.example.com/">Go back!</a>';
                 exit();
             }
             ?>
