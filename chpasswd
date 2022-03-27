@@ -1,6 +1,7 @@
 #!/bin/bash
 ## Author : Quach Chi Cuong
 ## Last updated : 08/2016
+## Modified By : Mistylook
 ## Description : 
 ## - Change pass user with Random string and print that Random string on terminal
 ## - Change pass user with password that user enter.
