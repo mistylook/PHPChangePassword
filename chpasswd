@@ -207,8 +207,8 @@ fi
 
 if [[ ${PASS_FLAG} -eq 1 && ! -z ${PASSWORD} ]];then
         LENGTH_PASS=`echo ${#PASSWORD}`
-        if [[ ${LENGTH_PASS} -le 6 || ${LENGTH_PASS} -gt 35 ]];then
-            echo "[Alert]: Your password need to be in range between 7 and 35. Please re-input password."
+        if [[ ${LENGTH_PASS} -le 5 || ${LENGTH_PASS} -gt 35 ]];then
+            echo "[Alert]: Your password need to be in range between 6 and 35. Please re-input password."
             exit 1
         fi
 elif [[ ${PASS_FLAG} -eq 1 && -z ${PASSWORD} ]];then
@@ -217,8 +217,8 @@ elif [[ ${PASS_FLAG} -eq 1 && -z ${PASSWORD} ]];then
 fi
 
 if [[ ${MAX_FLAG} -eq 1 && ! -z ${MAX_STRING} ]];then
-        if [[ ${MAX_STRING} -le 6 || ${MAX_STRING} -gt 35 ]];then
-            echo "[Alert]: Max length of password need to be in range between 7 and 35. Please re-input max length."
+        if [[ ${MAX_STRING} -le 5 || ${MAX_STRING} -gt 35 ]];then
+            echo "[Alert]: Max length of password need to be in range between 6 and 35. Please re-input max length."
             exit 1
         fi
 elif [[ ${MAX_FLAG} -eq 1 && -z ${MAX_STRING} ]];then
