@@ -11,7 +11,7 @@ Installation:
 2. Copy chpasswd to /usr/bin
 3. Chown chpasswd to be executeable (chmod +x /usr/bin/chpasswd)
 4. Allow sudo (visudo) and add this line: web-server-user ALL=NOPASSWD: /usr/bin/chpasswd
-6. Access the file (http://your.domain.com/changepass.php
+6. Access the file (http://your.domain.com/changepass.php)
 
 Most of the code are taken from these users/repo. Credits to them:
 - https://github.com/cuongquach/chrdpass.sh
